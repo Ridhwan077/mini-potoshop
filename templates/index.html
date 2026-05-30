@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Photoshop - PCD Project</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Mini Photoshop</div>
+        <div class="actions">
+            <input type="file" id="fileInput" hidden accept="image/*">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-upload"></i> Load Image
+            </button>
+            <button class="btn btn-primary" onclick="downloadImage()">
+                <i class="fas fa-download"></i> Save
+            </button>
+            <button class="btn" onclick="resetImage()" style="background: #ef4444; color: white;">
+                <i class="fas fa-undo"></i> Reset
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar glass">
+            <!-- Crop Controls -->
+            <div class="control-group">
+                <h3><i class="fas fa-crop"></i> Crop</h3>
+                <div class="crop-actions" style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" id="btnStartCrop" onclick="toggleCropMode()">Start Crop</button>
+                    <button class="btn btn-primary" id="btnApplyCrop" style="display: none;" onclick="applyCrop()">Apply</button>
+                    <button class="btn btn-danger" id="btnCancelCrop" style="display: none;" onclick="toggleCropMode(false)">Cancel</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Rotation</h3>
+                <input type="range" id="rotateRange" min="0" max="360" value="0" oninput="updateLabel('rotateVal', this.value)">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Angle: <span id="rotateVal">0</span>°</span>
+                    <button class="btn btn-primary" style="padding: 0.2rem 0.5rem;" onclick="applyTransform('rotate')">Apply</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Flip</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <button class="btn" onclick="applyTransform('flip', {direction: 'h'})">Horizontal</button>
+                    <button class="btn" onclick="applyTransform('flip', {direction: 'v'})">Vertical</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Resize</h3>
+                <select id="resizePreset" class="btn" style="background: rgba(0,0,0,0.2); width: 100%; margin-bottom: 0.5rem;" onchange="applyResizePreset(this.value)">
+                    <option value="">-- Pilih Ukuran Preset --</option>
+                    <option value="1920x1080">Full HD (1920 × 1080)</option>
+                    <option value="1280x720">HD (1280 × 720)</option>
+                    <option value="1080x1080">Instagram Square (1080 × 1080)</option>
+                    <option value="1080x1350">Instagram Portrait (1080 × 1350)</option>
+                    <option value="800x600">SVGA (800 × 600)</option>
+                    <option value="640x480">VGA (640 × 480)</option>
+                    <option value="300x300">Thumbnail (300 × 300)</option>
+                    <option value="custom">Custom...</option>
+                </select>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <input type="number" id="resizeW" placeholder="Width" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
+                    <input type="number" id="resizeH" placeholder="Height" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
+                </div>
+                <button class="btn btn-primary" onclick="applyResize()">Scale Image</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Translation</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <input type="number" id="transX" placeholder="X Offset" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
+                    <input type="number" id="transY" placeholder="Y Offset" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
+                </div>
+                <button class="btn btn-primary" onclick="applyTranslate()">Shift</button>
+            </div>
+        </aside>
+
+        <section class="canvas-container glass">
+            <div id="emptyState" class="empty-state">
+                <i class="fas fa-image"></i>
+                <p>No image loaded. Start by uploading a file.</p>
+            </div>
+            <div id="transformFrame" class="transform-frame" style="display: none;">
+                <div id="rotateHandle" class="rotate-handle" title="Drag to rotate">
+                    <i class="fas fa-redo"></i>
+                </div>
+                <div id="imageWrapper" class="image-wrapper">
+                    <img id="mainImage" src="" alt="Processed Image">
+                    <!-- Crop Overlay -->
+                    <div id="cropOverlay" class="crop-overlay" style="display: none;">
+                        <div id="cropBox" class="crop-box"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
