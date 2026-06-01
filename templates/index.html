@@ -27,7 +27,43 @@
 
     <main>
         <aside class="sidebar glass">
-            <!-- Crop Controls -->
+            <!-- Main Menu Categories -->
+            <div id="main-menu" class="main-menu">
+                <h2 class="panel-title" style="margin-bottom: 1.5rem;"><i class="fas fa-bars"></i> Tools Menu</h2>
+                
+                <div class="category-card" onclick="openPanel('panel-geometric')">
+                    <div class="card-icon"><i class="fas fa-shapes"></i></div>
+                    <div class="card-info">
+                        <h4>Geometric</h4>
+                        <p>Crop, Rotate, Resize, Flip</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-enhancement')">
+                    <div class="card-icon"><i class="fas fa-magic"></i></div>
+                    <div class="card-info">
+                        <h4>Enhancements</h4>
+                        <p>Brightness, Contrast (Coming Soon)</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-filters')">
+                    <div class="card-icon"><i class="fas fa-filter"></i></div>
+                    <div class="card-info">
+                        <h4>Filters</h4>
+                        <p>Blur, Sharpen (Coming Soon)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geometric Tools Panel -->
+            <div id="panel-geometric" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-shapes"></i> Geometric</h2>
+                </div>
+                
+                <!-- Crop Controls -->
             <div class="control-group">
                 <h3><i class="fas fa-crop"></i> Crop</h3>
                 <div class="crop-actions" style="display: flex; gap: 10px;">
@@ -82,6 +118,9 @@
                 </div>
                 <button class="btn btn-primary" onclick="applyTranslate()">Shift</button>
             </div>
+            </div> <!-- End panel-geometric -->
+            
+            <!-- Other panels will go here -->
         </aside>
 
         <section class="canvas-container glass">

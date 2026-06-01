@@ -277,3 +277,27 @@ function downloadImage() {
     link.href = mainImage.src;
     link.click();
 }
+
+// --- Navigation Logic ---
+function openPanel(panelId) {
+    document.getElementById('main-menu').style.display = 'none';
+    const panels = document.querySelectorAll('.tool-panel');
+    panels.forEach(p => p.style.display = 'none');
+    
+    const panel = document.getElementById(panelId);
+    if (panel) {
+        panel.style.display = 'block';
+        panel.classList.add('fade-in');
+        setTimeout(() => panel.classList.remove('fade-in'), 300);
+    }
+}
+
+function closePanel() {
+    const panels = document.querySelectorAll('.tool-panel');
+    panels.forEach(p => p.style.display = 'none');
+    
+    const mainMenu = document.getElementById('main-menu');
+    mainMenu.style.display = 'block';
+    mainMenu.classList.add('fade-in');
+    setTimeout(() => mainMenu.classList.remove('fade-in'), 300);
+}

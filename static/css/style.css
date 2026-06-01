@@ -233,3 +233,53 @@ select.btn option {
     background: var(--bg-color);
     color: var(--text-primary);
 }
+
+/* Category Cards */
+.category-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.category-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+    border-color: var(--accent-color);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.category-card .card-icon {
+    font-size: 1.8rem;
+    color: var(--accent-color);
+    width: 40px;
+    text-align: center;
+}
+
+.category-card .card-info h4 {
+    margin: 0 0 0.3rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.category-card .card-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Panel Animations */
+.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-15px); }
+    to { opacity: 1; transform: translateX(0); }
+}
