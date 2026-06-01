@@ -53,6 +53,28 @@ function displayImage(base64, isReset = false) {
             rotateRange.value = 0;
             updateLabel('rotateVal', '0');
         }
+        
+        // Reset Color UI
+        if (typeof isGrayscale !== 'undefined') {
+            isGrayscale = false;
+            const btnGray = document.getElementById('btnGrayscale');
+            if (btnGray) btnGray.classList.remove('btn-primary');
+            const hueRange = document.getElementById('hueRange');
+            if (hueRange) { hueRange.value = 0; updateLabel('hueVal', '0'); }
+            const satRange = document.getElementById('satRange');
+            if (satRange) { satRange.value = 0; updateLabel('satVal', '0'); }
+        }
+
+        // Reset Binary UI
+        const threshToggle = document.getElementById('threshToggle');
+        if (threshToggle) {
+            threshToggle.checked = false;
+            document.getElementById('threshRange').disabled = true;
+        }
+        const edgeType = document.getElementById('edgeType');
+        if (edgeType) edgeType.value = 'none';
+        const morphType = document.getElementById('morphType');
+        if (morphType) morphType.value = 'none';
     }
     
     // Offset the CSS rotation so the baked image doesn't double-rotate
@@ -276,6 +298,52 @@ function downloadImage() {
     link.download = 'processed_image.jpg';
     link.href = mainImage.src;
     link.click();
+}
+
+// --- Color Processing Logic ---
+let isGrayscale = false;
+
+async function toggleGrayscale() {
+    isGrayscale = !isGrayscale;
+    document.getElementById('btnGrayscale').classList.toggle('btn-primary', isGrayscale);
+    await applyTransform('color', { grayscale: isGrayscale });
+}
+
+async function applyColorParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('color', params);
+}
+
+function resetColorParam(param) {
+    if (param === 'hue') {
+        document.getElementById('hueRange').value = 0;
+        updateLabel('hueVal', '0');
+        applyColorParam('hue', 0);
+    } else if (param === 'saturation') {
+        document.getElementById('satRange').value = 0;
+        updateLabel('satVal', '0');
+        applyColorParam('saturation', 0);
+    }
+}
+
+// --- Binary & Edge Processing Logic ---
+async function applyBinaryEdgeParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('binary_edge', params);
+}
+
+function toggleThreshold(enabled) {
+    const threshRange = document.getElementById('threshRange');
+    threshRange.disabled = !enabled;
+    const val = enabled ? threshRange.value : -1;
+    applyBinaryEdgeParam('threshold', val);
+}
+
+function updateMorphSizeLabel(val) {
+    document.getElementById('morphSizeVal').textContent = val;
+    document.getElementById('morphSizeVal2').textContent = val;
 }
 
 // --- Navigation Logic ---

@@ -14,7 +14,19 @@ class BaseImageProcessor:
             'rotate': 0,
             'flip': {'h': False, 'v': False},
             'resize': None,
-            'translate': (0, 0)
+            'translate': (0, 0),
+            'color': {
+                'grayscale': False,
+                'channel': 'all', # 'all', 'r', 'g', 'b'
+                'hue': 0,
+                'saturation': 0
+            },
+            'binary_edge': {
+                'threshold': -1,
+                'edge_type': 'none',
+                'morph_type': 'none',
+                'morph_size': 3
+            }
         }
 
     def load_image_from_base64(self, base64_str):

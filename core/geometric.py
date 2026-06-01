@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-from .base_processor import BaseImageProcessor
+from .binary_edge import BinaryEdgeProcessor
 
-class GeometricTransformer(BaseImageProcessor):
+class GeometricTransformer(BinaryEdgeProcessor):
     def rotate(self, angle):
         self.transforms['rotate'] = angle
         return self.apply_pipeline()
@@ -25,8 +25,14 @@ class GeometricTransformer(BaseImageProcessor):
     def apply_pipeline(self):
         if self.original_image is None: return None
         img = self.original_image.copy()
+        
+        # 1. Apply Color Processing (sebelum transformasi geometris)
+        img = self.apply_color_pipeline(img)
+        
+        # 2. Apply Binary & Edge Processing
+        img = self.apply_binary_edge_pipeline(img)
 
-        # 1. Apply Resize
+        # 3. Apply Resize
         if self.transforms['resize']:
             w, h = self.transforms['resize']
             img = cv2.resize(img, (w, h), interpolation=cv2.INTER_LINEAR)

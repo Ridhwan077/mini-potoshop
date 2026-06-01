@@ -39,11 +39,19 @@
                     </div>
                 </div>
 
-                <div class="category-card" onclick="openPanel('panel-enhancement')">
-                    <div class="card-icon"><i class="fas fa-magic"></i></div>
+                <div class="category-card" onclick="openPanel('panel-colors')">
+                    <div class="card-icon"><i class="fas fa-palette"></i></div>
                     <div class="card-info">
-                        <h4>Enhancements</h4>
-                        <p>Brightness, Contrast (Coming Soon)</p>
+                        <h4>Color Processing</h4>
+                        <p>Grayscale, Channels, Hue, Saturation</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-binary')">
+                    <div class="card-icon"><i class="fas fa-adjust"></i></div>
+                    <div class="card-info">
+                        <h4>Binary & Edge</h4>
+                        <p>Threshold, Canny, Sobel, Morphology</p>
                     </div>
                 </div>
 
@@ -119,6 +127,96 @@
                 <button class="btn btn-primary" onclick="applyTranslate()">Shift</button>
             </div>
             </div> <!-- End panel-geometric -->
+            
+            <!-- Color Processing Panel -->
+            <div id="panel-colors" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-palette"></i> Colors</h2>
+                </div>
+
+                <div class="control-group">
+                    <h3>Mode</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" id="btnGrayscale" onclick="toggleGrayscale()">Toggle Grayscale</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Channels</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <button class="btn" onclick="applyColorParam('channel', 'r')" style="color: #f87171; border-color: rgba(248,113,113,0.3);">Red</button>
+                        <button class="btn" onclick="applyColorParam('channel', 'g')" style="color: #4ade80; border-color: rgba(74,222,128,0.3);">Green</button>
+                        <button class="btn" onclick="applyColorParam('channel', 'b')" style="color: #60a5fa; border-color: rgba(96,165,250,0.3);">Blue</button>
+                        <button class="btn btn-primary" onclick="applyColorParam('channel', 'all')">RGB (Reset)</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Hue</h3>
+                    <input type="range" id="hueRange" min="-180" max="180" value="0" oninput="updateLabel('hueVal', this.value)" onchange="applyColorParam('hue', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="hueVal">0</span>°</span>
+                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="resetColorParam('hue')">Reset</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Saturation</h3>
+                    <input type="range" id="satRange" min="-100" max="100" value="0" oninput="updateLabel('satVal', this.value)" onchange="applyColorParam('saturation', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="satVal">0</span>%</span>
+                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="resetColorParam('saturation')">Reset</button>
+                    </div>
+                </div>
+            </div> <!-- End panel-colors -->
+            
+            <!-- Binary & Edge Panel -->
+            <div id="panel-binary" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-adjust"></i> Binary & Edge</h2>
+                </div>
+
+                <div class="control-group">
+                    <h3>Edge Detection</h3>
+                    <select id="edgeType" class="btn" style="background: rgba(0,0,0,0.2); width: 100%; margin-bottom: 0.5rem;" onchange="applyBinaryEdgeParam('edge_type', this.value)">
+                        <option value="none">None</option>
+                        <option value="canny">Canny</option>
+                        <option value="sobel">Sobel</option>
+                        <option value="prewitt">Prewitt</option>
+                        <option value="robert">Robert</option>
+                        <option value="laplacian">Laplacian</option>
+                        <option value="log">Laplacian of Gaussian (LoG)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <h3>Thresholding (Binarization)</h3>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <input type="checkbox" id="threshToggle" onchange="toggleThreshold(this.checked)">
+                        <label for="threshToggle">Enable</label>
+                    </div>
+                    <input type="range" id="threshRange" min="0" max="255" value="127" disabled oninput="updateLabel('threshVal', this.value)" onchange="applyBinaryEdgeParam('threshold', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="threshVal">127</span></span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Morphology</h3>
+                    <select id="morphType" class="btn" style="background: rgba(0,0,0,0.2); width: 100%; margin-bottom: 0.5rem;" onchange="applyBinaryEdgeParam('morph_type', this.value)">
+                        <option value="none">None</option>
+                        <option value="erosion">Erosion (Kikis)</option>
+                        <option value="dilation">Dilation (Tebalkan)</option>
+                    </select>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="font-size: 0.85rem; color: var(--text-secondary);">Kernel Size</label>
+                        <span><span id="morphSizeVal">3</span>x<span id="morphSizeVal2">3</span></span>
+                    </div>
+                    <input type="range" id="morphSizeRange" min="3" max="21" step="2" value="3" oninput="updateMorphSizeLabel(this.value)" onchange="applyBinaryEdgeParam('morph_size', this.value)">
+                </div>
+            </div> <!-- End panel-binary -->
             
             <!-- Other panels will go here -->
         </aside>
