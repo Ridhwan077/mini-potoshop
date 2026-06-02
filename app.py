@@ -65,11 +65,48 @@ def transform():
         morph_size = data.get('morph_size')
         if morph_size is not None: morph_size = int(morph_size)
         result = img_proc.update_binary_edge(threshold, edge_type, morph_type, morph_size)
+    elif action == 'enhancement':
+        brightness = data.get('brightness')
+        if brightness is not None: brightness = int(brightness)
+        contrast = data.get('contrast')
+        if contrast is not None: contrast = int(contrast)
+        clahe = data.get('clahe')
+        result = img_proc.update_enhancement(brightness, contrast, clahe)
+    elif action == 'segmentation':
+        k = data.get('k')
+        if k is not None: k = int(k)
+        result = img_proc.update_segmentation(k)
+    elif action == 'restoration':
+        denoise = data.get('denoise')
+        median_blur = data.get('median_blur')
+        if median_blur is not None: median_blur = int(median_blur)
+        result = img_proc.update_restoration(denoise, median_blur)
+    elif action == 'filters':
+        blur_type = data.get('blur_type')
+        blur_size = data.get('blur_size')
+        if blur_size is not None: blur_size = int(blur_size)
+        sharpen = data.get('sharpen')
+        if sharpen is not None: sharpen = int(sharpen)
+        result = img_proc.update_filters(blur_type, blur_size, sharpen)
+    elif action == 'compression':
+        quality = data.get('quality')
+        if quality is not None: quality = int(quality)
+        result = img_proc.update_compression(quality)
     
     if result is not None:
         return jsonify({'status': 'success', 'image': img_proc.get_base64_image()})
     
     return jsonify({'error': 'Transformation failed'}), 400
+
+@app.route('/histogram', methods=['GET'])
+def histogram():
+    if img_proc.image is None:
+        return jsonify({'error': 'No image loaded'}), 400
+    
+    hist_data = img_proc.get_histogram_data()
+    if hist_data:
+        return jsonify(hist_data)
+    return jsonify({'error': 'Failed to calculate histogram'}), 400
 
 @app.route('/reset', methods=['POST'])
 def reset():

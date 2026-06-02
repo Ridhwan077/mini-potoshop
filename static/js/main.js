@@ -75,6 +75,25 @@ function displayImage(base64, isReset = false) {
         if (edgeType) edgeType.value = 'none';
         const morphType = document.getElementById('morphType');
         if (morphType) morphType.value = 'none';
+
+        // Reset Filters UI
+        const blurType = document.getElementById('blurType');
+        if (blurType) {
+            blurType.value = 'none';
+            const sizeGroup = document.getElementById('blurSizeGroup');
+            if (sizeGroup) sizeGroup.style.display = 'none';
+        }
+        const blurRange = document.getElementById('blurRange');
+        if (blurRange) {
+            blurRange.value = 1;
+            updateLabel('blurVal', '1');
+            updateLabel('blurVal2', '1');
+        }
+        const sharpenRange = document.getElementById('sharpenRange');
+        if (sharpenRange) {
+            sharpenRange.value = 0;
+            updateLabel('sharpenVal', '0');
+        }
     }
     
     // Offset the CSS rotation so the baked image doesn't double-rotate
@@ -368,4 +387,111 @@ function closePanel() {
     mainMenu.style.display = 'block';
     mainMenu.classList.add('fade-in');
     setTimeout(() => mainMenu.classList.remove('fade-in'), 300);
+}
+
+// --- Enhancement Logic ---
+async function applyEnhancementParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('enhancement', params);
+}
+
+// --- Segmentation Logic ---
+async function applySegmentationParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('segmentation', params);
+}
+
+// --- Restoration Logic ---
+async function applyRestorationParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('restoration', params);
+}
+
+// --- Compression Logic ---
+async function applyCompressionParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('compression', params);
+}
+
+// --- Histogram Logic ---
+let histogramChart = null;
+let currentHistData = null;
+
+async function fetchHistogram() {
+    const res = await fetch('/histogram');
+    const data = await res.json();
+    if (!data.error) {
+        currentHistData = data;
+        renderHistogramChart();
+    } else {
+        alert(data.error);
+    }
+}
+
+function renderHistogramChart() {
+    if (!currentHistData) return;
+    
+    const mode = document.getElementById('histMode').value;
+    const ctx = document.getElementById('histogramCanvas').getContext('2d');
+    
+    if (histogramChart) {
+        histogramChart.destroy();
+    }
+    
+    let datasets = [];
+    
+    if (mode === 'rgb') {
+        datasets = [
+            { label: 'Red', data: currentHistData.r, borderColor: 'red', backgroundColor: 'rgba(255, 0, 0, 0.1)', fill: true, tension: 0.1, pointRadius: 0 },
+            { label: 'Green', data: currentHistData.g, borderColor: 'green', backgroundColor: 'rgba(0, 255, 0, 0.1)', fill: true, tension: 0.1, pointRadius: 0 },
+            { label: 'Blue', data: currentHistData.b, borderColor: 'blue', backgroundColor: 'rgba(0, 0, 255, 0.1)', fill: true, tension: 0.1, pointRadius: 0 }
+        ];
+    } else {
+        datasets = [
+            { label: 'Grayscale', data: currentHistData.gray, borderColor: 'gray', backgroundColor: 'rgba(128, 128, 128, 0.1)', fill: true, tension: 0.1, pointRadius: 0 }
+        ];
+    }
+    
+    histogramChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: currentHistData.labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { display: false },
+                y: { display: false }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: 'white' }
+                }
+            }
+        }
+    });
+}
+
+// --- Filters Logic ---
+function updateBlurLabel(val) {
+    document.getElementById('blurVal').textContent = val;
+    document.getElementById('blurVal2').textContent = val;
+}
+
+async function applyFiltersParam(param, value) {
+    const params = {};
+    params[param] = value;
+    await applyTransform('filters', params);
+    
+    if (param === 'blur_type') {
+        const sizeGroup = document.getElementById('blurSizeGroup');
+        if (sizeGroup) {
+            sizeGroup.style.display = (value !== 'none') ? 'block' : 'none';
+        }
+    }
 }
