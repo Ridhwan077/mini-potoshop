@@ -26,6 +26,26 @@ class BaseImageProcessor:
                 'edge_type': 'none',
                 'morph_type': 'none',
                 'morph_size': 3
+            },
+            'filters': {
+                'blur_type': 'none',
+                'blur_size': 1,
+                'sharpen': 0
+            },
+            'enhancement': {
+                'brightness': 0,
+                'contrast': 0,
+                'clahe': False
+            },
+            'segmentation': {
+                'k': 0
+            },
+            'restoration': {
+                'denoise': False,
+                'median_blur': 0
+            },
+            'compression': {
+                'quality': 100
             }
         }
 

@@ -22,16 +22,9 @@ class GeometricTransformer(BinaryEdgeProcessor):
         self.transforms['translate'] = (tx, ty)
         return self.apply_pipeline()
 
-    def apply_pipeline(self):
-        if self.original_image is None: return None
-        img = self.original_image.copy()
+    def apply_geometric_pipeline(self, img):
+        if img is None: return None
         
-        # 1. Apply Color Processing (sebelum transformasi geometris)
-        img = self.apply_color_pipeline(img)
-        
-        # 2. Apply Binary & Edge Processing
-        img = self.apply_binary_edge_pipeline(img)
-
         # 3. Apply Resize
         if self.transforms['resize']:
             w, h = self.transforms['resize']
@@ -74,6 +67,21 @@ class GeometricTransformer(BinaryEdgeProcessor):
                     y_min, y_max = y_indices.min(), y_indices.max()
                     x_min, x_max = x_indices.min(), x_indices.max()
                     img = img[y_min:y_max+1, x_min:x_max+1]
+
+        return img
+
+    def apply_pipeline(self):
+        if self.original_image is None: return None
+        img = self.original_image.copy()
+        
+        # 1. Apply Color Processing (sebelum transformasi geometris)
+        img = self.apply_color_pipeline(img)
+        
+        # 2. Apply Binary & Edge Processing
+        img = self.apply_binary_edge_pipeline(img)
+
+        # 3. Apply Geometric Transform
+        img = self.apply_geometric_pipeline(img)
 
         self.image = img
         return self.image

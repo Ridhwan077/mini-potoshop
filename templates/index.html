@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -59,7 +60,47 @@
                     <div class="card-icon"><i class="fas fa-filter"></i></div>
                     <div class="card-info">
                         <h4>Filters</h4>
-                        <p>Blur, Sharpen (Coming Soon)</p>
+                        <p>Blur, Sharpen</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-enhancement')">
+                    <div class="card-icon"><i class="fas fa-sun"></i></div>
+                    <div class="card-info">
+                        <h4>Enhancement</h4>
+                        <p>Brightness, Contrast, CLAHE</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-segmentation')">
+                    <div class="card-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="card-info">
+                        <h4>Segmentation</h4>
+                        <p>K-Means Clustering</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-restoration')">
+                    <div class="card-icon"><i class="fas fa-magic"></i></div>
+                    <div class="card-info">
+                        <h4>Restoration</h4>
+                        <p>Denoise, Median Blur</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-compression')">
+                    <div class="card-icon"><i class="fas fa-compress"></i></div>
+                    <div class="card-info">
+                        <h4>Compression</h4>
+                        <p>JPEG Quality Simulation</p>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="openPanel('panel-histogram'); fetchHistogram()">
+                    <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div class="card-info">
+                        <h4>Histogram</h4>
+                        <p>RGB & Grayscale Analysis</p>
                     </div>
                 </div>
             </div>
@@ -217,8 +258,138 @@
                     <input type="range" id="morphSizeRange" min="3" max="21" step="2" value="3" oninput="updateMorphSizeLabel(this.value)" onchange="applyBinaryEdgeParam('morph_size', this.value)">
                 </div>
             </div> <!-- End panel-binary -->
-            
-            <!-- Other panels will go here -->
+
+            <!-- Filters Panel -->
+            <div id="panel-filters" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-filter"></i> Filters</h2>
+                </div>
+
+                <div class="control-group">
+                    <h3>Blur</h3>
+                    <select id="blurType" class="btn" style="background: rgba(0,0,0,0.2); width: 100%; margin-bottom: 0.5rem;" onchange="applyFiltersParam('blur_type', this.value)">
+                        <option value="none">None</option>
+                        <option value="gaussian">Gaussian Blur</option>
+                        <option value="average">Average Blur</option>
+                    </select>
+                    <div id="blurSizeGroup" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label style="font-size: 0.85rem; color: var(--text-secondary);">Kernel Size</label>
+                            <span><span id="blurVal">1</span>x<span id="blurVal2">1</span></span>
+                        </div>
+                        <input type="range" id="blurRange" min="1" max="21" step="2" value="1" oninput="updateBlurLabel(this.value)" onchange="applyFiltersParam('blur_size', this.value)">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Sharpen</h3>
+                    <input type="range" id="sharpenRange" min="0" max="100" value="0" oninput="updateLabel('sharpenVal', this.value)" onchange="applyFiltersParam('sharpen', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Intensity: <span id="sharpenVal">0</span>%</span>
+                    </div>
+                </div>
+            </div> <!-- End panel-filters -->
+
+            <!-- Enhancement Panel -->
+            <div id="panel-enhancement" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-sun"></i> Enhancement</h2>
+                </div>
+                <div class="control-group">
+                    <h3>Brightness</h3>
+                    <input type="range" id="brightnessRange" min="-100" max="100" value="0" oninput="updateLabel('brightnessVal', this.value)" onchange="applyEnhancementParam('brightness', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="brightnessVal">0</span></span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <h3>Contrast</h3>
+                    <input type="range" id="contrastRange" min="-100" max="100" value="0" oninput="updateLabel('contrastVal', this.value)" onchange="applyEnhancementParam('contrast', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="contrastVal">0</span></span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <h3>CLAHE (Hist Eq)</h3>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <input type="checkbox" id="claheToggle" onchange="applyEnhancementParam('clahe', this.checked)">
+                        <label for="claheToggle">Enable CLAHE</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Segmentation Panel -->
+            <div id="panel-segmentation" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-layer-group"></i> Segmentation</h2>
+                </div>
+                <div class="control-group">
+                    <h3>K-Means Clustering</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">Reduce image to K dominant colors.</p>
+                    <input type="range" id="kmeansRange" min="0" max="16" value="0" oninput="updateLabel('kmeansVal', this.value)" onchange="applySegmentationParam('k', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>K: <span id="kmeansVal">0</span> (0 = off)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restoration Panel -->
+            <div id="panel-restoration" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-magic"></i> Restoration</h2>
+                </div>
+                <div class="control-group">
+                    <h3>Denoise</h3>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <input type="checkbox" id="denoiseToggle" onchange="applyRestorationParam('denoise', this.checked)">
+                        <label for="denoiseToggle">Fast NL Means Denoising</label>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <h3>Median Blur</h3>
+                    <input type="range" id="medianBlurRange" min="0" max="21" step="2" value="0" oninput="updateLabel('medianBlurVal', this.value)" onchange="applyRestorationParam('median_blur', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Kernel: <span id="medianBlurVal">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compression Panel -->
+            <div id="panel-compression" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-compress"></i> Compression</h2>
+                </div>
+                <div class="control-group">
+                    <h3>JPEG Quality Simulation</h3>
+                    <input type="range" id="qualityRange" min="1" max="100" value="100" oninput="updateLabel('qualityVal', this.value)" onchange="applyCompressionParam('quality', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Quality: <span id="qualityVal">100</span>%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histogram Panel -->
+            <div id="panel-histogram" class="tool-panel" style="display: none;">
+                <div class="panel-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                    <button class="btn" style="padding: 0.5rem;" onclick="closePanel()"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="panel-title" style="margin: 0;"><i class="fas fa-chart-bar"></i> Histogram</h2>
+                </div>
+                <div class="control-group">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <button class="btn btn-secondary" onclick="fetchHistogram()" style="font-size: 0.8rem;"><i class="fas fa-sync"></i> Refresh</button>
+                        <select id="histMode" class="btn" style="background: rgba(0,0,0,0.2); font-size: 0.8rem;" onchange="renderHistogramChart()">
+                            <option value="rgb">RGB</option>
+                            <option value="gray">Grayscale</option>
+                        </select>
+                    </div>
+                    <canvas id="histogramCanvas" width="300" height="200" style="background: #1e1e1e; border-radius: 8px;"></canvas>
+                </div>
+            </div>
         </aside>
 
         <section class="canvas-container glass">
