@@ -23,13 +23,22 @@
             <button class="btn" onclick="resetImage()" style="background: #ef4444; color: white;">
                 <i class="fas fa-undo"></i> Reset
             </button>
+            <button class="btn" onclick="deleteImage()" style="background: #dc2626; color: white;">
+                <i class="fas fa-trash"></i> Hapus
+            </button>
         </div>
     </header>
 
     <main>
         <aside class="sidebar glass">
+            <!-- Sidebar Placeholder (shown when no image is loaded) -->
+            <div id="sidebar-placeholder" class="sidebar-placeholder">
+                <i class="fas fa-image"></i>
+                <p>Fitur akan muncul disini saat gambar sudah dimuat</p>
+            </div>
+
             <!-- Main Menu Categories -->
-            <div id="main-menu" class="main-menu">
+            <div id="main-menu" class="main-menu" style="display: none;">
                 <h2 class="panel-title" style="margin-bottom: 1.5rem;"><i class="fas fa-bars"></i> Tools Menu</h2>
                 
                 <div class="category-card" onclick="openPanel('panel-geometric')">
@@ -140,7 +149,15 @@
             </div>
 
             <div class="control-group">
-                <h3>Resize</h3>
+                <h3><i class="fas fa-expand-arrows-alt"></i> Resize</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 0.5rem;">
+                    <button class="btn btn-secondary" id="btnStartResize" onclick="toggleResizeMode()" style="flex: 1; font-size: 0.85rem;">
+                        <i class="fas fa-vector-square"></i> Bingkai Interaktif
+                    </button>
+                    <button class="btn" id="btnCancelResize" style="display: none; flex: 1; background: #ef4444; color: white;" onclick="toggleResizeMode(false)">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                </div>
                 <select id="resizePreset" class="btn" style="background: rgba(0,0,0,0.2); width: 100%; margin-bottom: 0.5rem;" onchange="applyResizePreset(this.value)">
                     <option value="">-- Pilih Ukuran Preset --</option>
                     <option value="1920x1080">Full HD (1920 × 1080)</option>
@@ -153,17 +170,17 @@
                     <option value="custom">Custom...</option>
                 </select>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                    <input type="number" id="resizeW" placeholder="Width" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
-                    <input type="number" id="resizeH" placeholder="Height" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
+                    <input type="number" id="resizeW" placeholder="Width" class="input-field">
+                    <input type="number" id="resizeH" placeholder="Height" class="input-field">
                 </div>
-                <button class="btn btn-primary" onclick="applyResize()">Scale Image</button>
+                <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="applyResize()">Scale Image</button>
             </div>
 
             <div class="control-group">
                 <h3>Translation</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                    <input type="number" id="transX" placeholder="X Offset" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
-                    <input type="number" id="transY" placeholder="Y Offset" class="btn" style="text-align: left; background: rgba(0,0,0,0.2);">
+                    <input type="number" id="transX" placeholder="X Offset" class="input-field">
+                    <input type="number" id="transY" placeholder="Y Offset" class="input-field">
                 </div>
                 <button class="btn btn-primary" onclick="applyTranslate()">Shift</button>
             </div>
@@ -184,6 +201,24 @@
                 </div>
 
                 <div class="control-group">
+                    <h3>Hue</h3>
+                    <input type="range" id="hueRange" min="-180" max="180" value="0" oninput="updateLabel('hueVal', this.value)" onchange="applyColorParam('hue', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="hueVal">0</span>°</span>
+                        <button id="btnResetHue" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="resetColorParam('hue')">Reset</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Saturation</h3>
+                    <input type="range" id="satRange" min="-100" max="100" value="0" oninput="updateLabel('satVal', this.value)" onchange="applyColorParam('saturation', this.value)">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><span id="satVal">0</span>%</span>
+                        <button id="btnResetSat" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="resetColorParam('saturation')">Reset</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <h3>Channels</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                         <button class="btn" onclick="applyColorParam('channel', 'r')" style="color: #f87171; border-color: rgba(248,113,113,0.3);">Red</button>
@@ -194,20 +229,10 @@
                 </div>
 
                 <div class="control-group">
-                    <h3>Hue</h3>
-                    <input type="range" id="hueRange" min="-180" max="180" value="0" oninput="updateLabel('hueVal', this.value)" onchange="applyColorParam('hue', this.value)">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span><span id="hueVal">0</span>°</span>
-                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="resetColorParam('hue')">Reset</button>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Saturation</h3>
-                    <input type="range" id="satRange" min="-100" max="100" value="0" oninput="updateLabel('satVal', this.value)" onchange="applyColorParam('saturation', this.value)">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span><span id="satVal">0</span>%</span>
-                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="resetColorParam('saturation')">Reset</button>
+                    <h3>Color Palette (Tint)</h3>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                        <input type="color" id="tintColor" value="#ffffff" onchange="applyColorParam('tint_color', this.value)" style="width: 100%; height: 40px; border: none; cursor: pointer; border-radius: 8px; background: none;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem;" onclick="resetColorParam('tint_color')">Reset</button>
                     </div>
                 </div>
             </div> <!-- End panel-colors -->
@@ -407,10 +432,53 @@
                     <div id="cropOverlay" class="crop-overlay" style="display: none;">
                         <div id="cropBox" class="crop-box"></div>
                     </div>
+                    <!-- Resize Overlay -->
+                    <div id="resizeOverlay" class="resize-overlay" style="display: none;">
+                        <div id="resizeFrame" class="resize-frame">
+                            <div class="resize-handle" data-handle="nw"></div>
+                            <div class="resize-handle" data-handle="n"></div>
+                            <div class="resize-handle" data-handle="ne"></div>
+                            <div class="resize-handle" data-handle="e"></div>
+                            <div class="resize-handle" data-handle="se"></div>
+                            <div class="resize-handle" data-handle="s"></div>
+                            <div class="resize-handle" data-handle="sw"></div>
+                            <div class="resize-handle" data-handle="w"></div>
+                            <div id="resizeDimLabel" class="resize-dim-label"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <button id="btnCompare" class="btn-compare" onclick="openCompare()" style="display: none;" title="Preview Before & After">
+                <i class="fas fa-columns"></i> Before / After
+            </button>
         </section>
     </main>
+
+    <!-- Before/After Compare Overlay -->
+    <div id="compareOverlay" class="compare-overlay" style="display: none;">
+        <div class="compare-container">
+            <div class="compare-header">
+                <h3><i class="fas fa-columns"></i> Before & After</h3>
+                <button class="btn" onclick="closeCompare()" style="padding: 0.5rem 0.8rem;">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+            </div>
+            <div class="compare-viewport" id="compareViewport">
+                <img id="compareAfter" src="" alt="After">
+                <div id="compareBeforeClip" class="compare-before-clip">
+                    <img id="compareBefore" src="" alt="Before">
+                </div>
+                <div id="compareSlider" class="compare-slider">
+                    <div class="compare-slider-line"></div>
+                    <div class="compare-slider-handle">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                </div>
+                <span class="compare-label compare-label-left">Before</span>
+                <span class="compare-label compare-label-right">After</span>
+            </div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

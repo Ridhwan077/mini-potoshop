@@ -4,11 +4,12 @@ from core.base_processor import BaseImageProcessor
 
 class ColorProcessor(BaseImageProcessor):
     
-    def update_color(self, grayscale=None, channel=None, hue=None, saturation=None):
+    def update_color(self, grayscale=None, channel=None, hue=None, saturation=None, tint_color=None):
         if grayscale is not None: self.transforms['color']['grayscale'] = grayscale
         if channel is not None: self.transforms['color']['channel'] = channel
         if hue is not None: self.transforms['color']['hue'] = hue
         if saturation is not None: self.transforms['color']['saturation'] = saturation
+        if tint_color is not None: self.transforms['color']['tint_color'] = tint_color
         
         # Panggil pipeline utama untuk merender ulang gambar dengan setting warna baru
         return self.apply_pipeline()
@@ -50,6 +51,17 @@ class ColorProcessor(BaseImageProcessor):
             
             hsv = hsv.astype(np.uint8)
             bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+        
+        # Apply Tint Color (Multiply Blend)
+        if c.get('tint_color') and c['tint_color'] != '#ffffff':
+            hex_color = c['tint_color'].lstrip('#')
+            # Extract R, G, B
+            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            tint_bgr = np.array([b, g, r], dtype=np.float32)
+            
+            bgr = bgr.astype(np.float32)
+            bgr = (bgr * tint_bgr) / 255.0
+            bgr = np.clip(bgr, 0, 255).astype(np.uint8)
             
         # 3. Channel Splitting
         if c['channel'] == 'r':

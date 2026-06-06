@@ -56,7 +56,8 @@ def transform():
         if hue is not None: hue = float(hue)
         saturation = data.get('saturation')
         if saturation is not None: saturation = float(saturation)
-        result = img_proc.update_color(grayscale, channel, hue, saturation)
+        tint_color = data.get('tint_color')
+        result = img_proc.update_color(grayscale=grayscale, channel=channel, hue=hue, saturation=saturation, tint_color=tint_color)
     elif action == 'binary_edge':
         threshold = data.get('threshold')
         if threshold is not None: threshold = int(threshold)

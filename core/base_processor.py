@@ -19,7 +19,8 @@ class BaseImageProcessor:
                 'grayscale': False,
                 'channel': 'all', # 'all', 'r', 'g', 'b'
                 'hue': 0,
-                'saturation': 0
+                'saturation': 0,
+                'tint_color': '#ffffff'
             },
             'binary_edge': {
                 'threshold': -1,
