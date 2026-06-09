@@ -213,28 +213,56 @@ window.addEventListener('mouseup', () => {
 });
 // ----------------------------------
 
+let transformTimeout = null;
+let currentAbortController = null;
+
 async function applyTransform(action, params = {}) {
-    const body = { action, ...params };
-
-    if (action === 'rotate') {
-        body.angle = currentRotation; // Send absolute angle for the pipeline
+    // Clear any pending request if user is still interacting
+    if (transformTimeout) {
+        clearTimeout(transformTimeout);
     }
 
-    const res = await fetch('/transform', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (data.status === 'success') {
-        if (action === 'rotate') {
-            bakedRotation = currentRotation;
+    // Debounce the request by 200ms
+    transformTimeout = setTimeout(async () => {
+        // Jika ada request sebelumnya yang masih berjalan, batalkan!
+        if (currentAbortController) {
+            currentAbortController.abort();
         }
-        displayImage(data.image, false);
-        updateUndoRedoButtons(data.can_undo, data.can_redo);
-    } else {
-        alert(data.error);
-    }
+
+        currentAbortController = new AbortController();
+        const signal = currentAbortController.signal;
+
+        const body = { action, ...params };
+
+        if (action === 'rotate') {
+            body.angle = currentRotation; // Send absolute angle for the pipeline
+        }
+
+        try {
+            const res = await fetch('/transform', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+                signal: signal
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                if (action === 'rotate') {
+                    bakedRotation = currentRotation;
+                }
+                displayImage(data.image, false);
+                updateUndoRedoButtons(data.can_undo, data.can_redo);
+            } else {
+                alert(data.error);
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.log('Request lama dibatalkan karena ada geseran/klik baru.');
+            } else {
+                console.error("Transform error:", error);
+            }
+        }
+    }, 200);
 }
 
 // --- Undo / Redo Logic ---

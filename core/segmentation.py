@@ -24,8 +24,8 @@ class SegmentationProcessor:
         # Define stopping criteria
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
         
-        # Apply K-means
-        _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        # Apply K-means (Reduce attempts from 10 to 1 for much faster interactive performance)
+        _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 1, cv2.KMEANS_PP_CENTERS)
         
         # Convert back to 8 bit values
         centers = np.uint8(centers)
