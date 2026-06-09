@@ -423,10 +423,14 @@
             </div>
         </aside>
 
-        <section class="canvas-container glass">
+        <section class="canvas-container glass" id="canvasContainer">
+            <div id="dropOverlay" class="drop-overlay">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Lepaskan gambar di sini</p>
+            </div>
             <div id="emptyState" class="empty-state">
                 <i class="fas fa-image"></i>
-                <p>No image loaded. Start by uploading a file.</p>
+                <p>Belum ada gambar. Upload atau drag &amp; drop gambar ke sini.</p>
             </div>
             <div id="transformFrame" class="transform-frame" style="display: none;">
                 <div id="rotateHandle" class="rotate-handle" title="Drag to rotate">

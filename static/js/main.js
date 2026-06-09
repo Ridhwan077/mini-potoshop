@@ -23,6 +23,32 @@ fileInput.addEventListener('change', function (e) {
     reader.readAsDataURL(file);
 });
 
+// --- Drag & Drop Logic ---
+const canvasContainer = document.getElementById('canvasContainer');
+
+canvasContainer.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    canvasContainer.classList.add('drag-over');
+});
+
+canvasContainer.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    canvasContainer.classList.remove('drag-over');
+});
+
+canvasContainer.addEventListener('drop', (e) => {
+    e.preventDefault();
+    canvasContainer.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        uploadImage(event.target.result);
+    };
+    reader.readAsDataURL(file);
+});
+
 async function uploadImage(base64) {
     const res = await fetch('/upload', {
         method: 'POST',
