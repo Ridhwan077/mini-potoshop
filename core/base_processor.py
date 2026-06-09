@@ -7,6 +7,9 @@ class BaseImageProcessor:
         self.image = None
         self.original_image = None
         self.source_image = None
+        self.history_undo = []
+        self.history_redo = []
+        self.max_history = 30
         self.reset_transforms()
 
     def reset_transforms(self):
@@ -72,3 +75,34 @@ class BaseImageProcessor:
             return None
         _, buffer = cv2.imencode('.png', img)
         return base64.b64encode(buffer).decode('utf-8')
+
+    def save_state(self):
+        """Simpan state transforms saat ini ke undo stack sebelum transform baru."""
+        import copy
+        self.history_undo.append(copy.deepcopy(self.transforms))
+        if len(self.history_undo) > self.max_history:
+            self.history_undo.pop(0)
+        # Setiap aksi baru menghapus redo stack
+        self.history_redo.clear()
+
+    def undo(self):
+        """Kembalikan ke state transforms sebelumnya."""
+        import copy
+        if not self.history_undo:
+            return None
+        # Simpan state saat ini ke redo stack
+        self.history_redo.append(copy.deepcopy(self.transforms))
+        # Ambil state terakhir dari undo stack
+        self.transforms = self.history_undo.pop()
+        return self.apply_pipeline()
+
+    def redo(self):
+        """Maju ke state transforms yang sudah di-undo."""
+        import copy
+        if not self.history_redo:
+            return None
+        # Simpan state saat ini ke undo stack
+        self.history_undo.append(copy.deepcopy(self.transforms))
+        # Ambil state dari redo stack
+        self.transforms = self.history_redo.pop()
+        return self.apply_pipeline()

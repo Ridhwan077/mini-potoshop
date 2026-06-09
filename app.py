@@ -28,6 +28,9 @@ def transform():
     if img_proc.image is None:
         return jsonify({'error': 'No image loaded'}), 400
     
+    # Simpan state sebelum transform untuk undo
+    img_proc.save_state()
+    
     result = None
     if action == 'rotate':
         angle = float(data.get('angle', 0))
@@ -95,9 +98,42 @@ def transform():
         result = img_proc.update_compression(quality)
     
     if result is not None:
-        return jsonify({'status': 'success', 'image': img_proc.get_base64_image()})
+        return jsonify({
+            'status': 'success',
+            'image': img_proc.get_base64_image(),
+            'can_undo': len(img_proc.history_undo),
+            'can_redo': len(img_proc.history_redo)
+        })
     
     return jsonify({'error': 'Transformation failed'}), 400
+
+@app.route('/undo', methods=['POST'])
+def undo():
+    if img_proc.image is None:
+        return jsonify({'error': 'No image loaded'}), 400
+    result = img_proc.undo()
+    if result is not None:
+        return jsonify({
+            'status': 'success',
+            'image': img_proc.get_base64_image(),
+            'can_undo': len(img_proc.history_undo),
+            'can_redo': len(img_proc.history_redo)
+        })
+    return jsonify({'error': 'Tidak ada aksi untuk di-undo'}), 400
+
+@app.route('/redo', methods=['POST'])
+def redo():
+    if img_proc.image is None:
+        return jsonify({'error': 'No image loaded'}), 400
+    result = img_proc.redo()
+    if result is not None:
+        return jsonify({
+            'status': 'success',
+            'image': img_proc.get_base64_image(),
+            'can_undo': len(img_proc.history_undo),
+            'can_redo': len(img_proc.history_redo)
+        })
+    return jsonify({'error': 'Tidak ada aksi untuk di-redo'}), 400
 
 @app.route('/histogram', methods=['GET'])
 def histogram():
@@ -115,7 +151,14 @@ def reset():
         img_proc.original_image = img_proc.source_image.copy()
         img_proc.image = img_proc.source_image.copy()
         img_proc.reset_transforms()
-        return jsonify({'status': 'success', 'image': img_proc.get_base64_image()})
+        img_proc.history_undo.clear()
+        img_proc.history_redo.clear()
+        return jsonify({
+            'status': 'success',
+            'image': img_proc.get_base64_image(),
+            'can_undo': 0,
+            'can_redo': 0
+        })
     return jsonify({'error': 'No source image found'}), 400
 
 if __name__ == '__main__':

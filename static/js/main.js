@@ -205,10 +205,48 @@ async function applyTransform(action, params = {}) {
             bakedRotation = currentRotation;
         }
         displayImage(data.image, false);
+        updateUndoRedoButtons(data.can_undo, data.can_redo);
     } else {
         alert(data.error);
     }
 }
+
+// --- Undo / Redo Logic ---
+function updateUndoRedoButtons(canUndo, canRedo) {
+    const btnUndo = document.getElementById('btnUndo');
+    const btnRedo = document.getElementById('btnRedo');
+    if (btnUndo) btnUndo.disabled = !canUndo;
+    if (btnRedo) btnRedo.disabled = !canRedo;
+}
+
+async function undoAction() {
+    const res = await fetch('/undo', { method: 'POST' });
+    const data = await res.json();
+    if (data.status === 'success') {
+        displayImage(data.image, false);
+        updateUndoRedoButtons(data.can_undo, data.can_redo);
+    }
+}
+
+async function redoAction() {
+    const res = await fetch('/redo', { method: 'POST' });
+    const data = await res.json();
+    if (data.status === 'success') {
+        displayImage(data.image, false);
+        updateUndoRedoButtons(data.can_undo, data.can_redo);
+    }
+}
+
+// Keyboard shortcuts: Ctrl+Z = Undo, Ctrl+Y = Redo
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'z') {
+        e.preventDefault();
+        undoAction();
+    } else if (e.ctrlKey && e.key === 'y') {
+        e.preventDefault();
+        redoAction();
+    }
+});
 
 function applyResizePreset(value) {
     if (!value || value === 'custom') return;
@@ -344,6 +382,7 @@ async function resetImage() {
     const data = await res.json();
     if (data.status === 'success') {
         displayImage(data.image, true);
+        updateUndoRedoButtons(0, 0);
     }
 }
 
@@ -750,8 +789,6 @@ window.addEventListener('mouseup', () => {
 });
 
 // --- Before/After Compare Logic ---
-let isCompareDragging = false;
-
 function openCompare() {
     if (!originalImageBase64 || !mainImage.src) {
         alert('Belum ada gambar untuk dibandingkan.');
@@ -761,52 +798,13 @@ function openCompare() {
     const overlay = document.getElementById('compareOverlay');
     const afterImg = document.getElementById('compareAfter');
     const beforeImg = document.getElementById('compareBefore');
-    const clip = document.getElementById('compareBeforeClip');
-    const slider = document.getElementById('compareSlider');
 
-    afterImg.src = mainImage.src;
     beforeImg.src = `data:image/png;base64,${originalImageBase64}`;
+    afterImg.src = mainImage.src;
 
     overlay.style.display = 'flex';
-
-    // After the after-image loads, match before-image dimensions
-    afterImg.onload = function () {
-        const w = afterImg.offsetWidth;
-        beforeImg.style.width = w + 'px';
-        clip.style.width = (w / 2) + 'px';
-        slider.style.left = '50%';
-    };
 }
 
 function closeCompare() {
     document.getElementById('compareOverlay').style.display = 'none';
-}
-
-// Compare slider drag interaction
-document.getElementById('compareViewport').addEventListener('mousedown', (e) => {
-    isCompareDragging = true;
-    updateCompareSlider(e);
-    e.preventDefault();
-});
-
-window.addEventListener('mousemove', (e) => {
-    if (!isCompareDragging) return;
-    updateCompareSlider(e);
-});
-
-window.addEventListener('mouseup', () => {
-    if (isCompareDragging) {
-        isCompareDragging = false;
-    }
-});
-
-function updateCompareSlider(e) {
-    const viewport = document.getElementById('compareViewport');
-    const rect = viewport.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    x = Math.max(0, Math.min(x, rect.width));
-    const percent = (x / rect.width) * 100;
-
-    document.getElementById('compareBeforeClip').style.width = x + 'px';
-    document.getElementById('compareSlider').style.left = percent + '%';
 }
